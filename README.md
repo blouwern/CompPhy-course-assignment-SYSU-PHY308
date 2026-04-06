@@ -1,5 +1,5 @@
 # List of Contents
-[Assignment 1: MPI parallel matrix multiplication](#Assignment-1:-MPI-parallel-matrix-multiplication)
+[Assignment 1: MPI parallel matrix multiplication](#assignment-1-mpi-parallel-matrix-multiplication)
 
 ## Assignment 1: MPI parallel matrix multiplication
 Prerequisites: cmake, ninja, openmpi, openblas... Just add what you lack. (e.g. `sudo apt install openmpi libopenblas-dev`)
