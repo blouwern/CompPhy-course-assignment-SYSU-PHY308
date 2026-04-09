@@ -8,8 +8,7 @@ Requirements implemented:
 2. Matrix sizes n in [10, 100, 500, 1000, 5000, 10000], using n*n by n*n.
 3. Run each (program, n) 5 times and average the parsed [Time taken] value.
 4. Use <module_name> in [Time taken]<module_name> as algorithm name in output.
-5. For MM_RS_seq only: if one run exceeds 300s, interrupt remaining runs for
-   that n and record result as >300sec.
+5. No timeout is enforced; runs are allowed to complete naturally.
 """
 
 from __future__ import annotations
@@ -21,7 +20,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 
 TIME_LINE_PATTERN = re.compile(
@@ -64,46 +63,25 @@ def parse_time_taken(output: str) -> Tuple[Optional[str], Optional[float]]:
 	return module_name, time_sec
 
 
-def normalize_process_output(raw: object) -> str:
-	if raw is None:
-		return ""
-	if isinstance(raw, bytes):
-		return raw.decode("utf-8", errors="replace")
-	if isinstance(raw, str):
-		return raw
-	return str(raw)
-
-
 def run_one(
 	program: str,
 	exe_path: Path,
 	n: int,
 	mpirun_cmd: str,
 	mpi_np: int,
-	timeout_sec: Optional[int],
-) -> Tuple[Optional[str], Optional[float], str]:
+	) -> Tuple[Optional[str], Optional[float], str]:
 	dims = [str(n), str(n), str(n), str(n)]
 	if program.endswith("_mpi"):
 		cmd = [mpirun_cmd, "-np", str(mpi_np), str(exe_path), *dims]
 	else:
 		cmd = [str(exe_path), *dims]
 
-	try:
-		completed = subprocess.run(
-			cmd,
-			capture_output=True,
-			text=True,
-			check=False,
-			timeout=timeout_sec,
-		)
-	except subprocess.TimeoutExpired as exc:
-		mixed_output = (
-			normalize_process_output(exc.stdout)
-			+ "\n"
-			+ normalize_process_output(exc.stderr)
-		)
-		module_name, _ = parse_time_taken(mixed_output)
-		return module_name, None, "timeout"
+	completed = subprocess.run(
+		cmd,
+		capture_output=True,
+		text=True,
+		check=False,
+	)
 
 	mixed_output = completed.stdout + "\n" + completed.stderr
 	module_name, time_sec = parse_time_taken(mixed_output)
@@ -122,7 +100,6 @@ def benchmark_program(
 	runs: int,
 	mpirun_cmd: str,
 	mpi_np: int,
-	rs_seq_timeout_sec: int,
 ) -> List[BenchResult]:
 	rows: List[BenchResult] = []
 	last_module_name: Optional[str] = None
@@ -133,14 +110,12 @@ def benchmark_program(
 		runs_completed = 0
 
 		for _ in range(runs):
-			timeout = rs_seq_timeout_sec if program == "MM_RS_seq" else None
 			module_name, time_sec, run_status = run_one(
 				program=program,
 				exe_path=exe_path,
 				n=n,
 				mpirun_cmd=mpirun_cmd,
 				mpi_np=mpi_np,
-				timeout_sec=timeout,
 			)
 
 			if module_name:
@@ -148,25 +123,17 @@ def benchmark_program(
 
 			if run_status != "ok":
 				status = run_status
-				if program == "MM_RS_seq" and run_status == "timeout":
-					status = ">300sec"
 				break
 
 			if time_sec is None:
 				status = "error(no_time_taken_line)"
 				break
 
-			if program == "MM_RS_seq" and time_sec > rs_seq_timeout_sec:
-				status = ">300sec"
-				break
-
 			times.append(time_sec)
 			runs_completed += 1
 
 		module_name_for_row = last_module_name or program
-		if status == ">300sec":
-			avg_str = ">300sec"
-		elif times:
+		if times:
 			avg_str = f"{(sum(times) / len(times)):.6f}"
 		else:
 			avg_str = ""
@@ -238,6 +205,13 @@ def main() -> int:
 		help="Directory containing executables. Default: build",
 	)
 	parser.add_argument(
+		"--programs",
+		nargs="+",
+		choices=TARGET_PROGRAMS,
+		default=TARGET_PROGRAMS,
+		help="Programs to benchmark. Default: all six.",
+	)
+	parser.add_argument(
 		"--out",
 		default="report/perf_results_6_programs.csv",
 		help="Output CSV path.",
@@ -249,13 +223,6 @@ def main() -> int:
 		# default=4,
 		help="Process count for MPI executables.",
 	)
-	parser.add_argument(
-		"--rs-seq-timeout-sec",
-		type=int,
-		default=300,
-		help="Timeout used only for MM_RS_seq (seconds).",
-	)
-
 	args = parser.parse_args()
 
 	repo_root = Path(__file__).resolve().parents[1]
@@ -272,7 +239,7 @@ def main() -> int:
 		return 1
 
 	all_rows: List[BenchResult] = []
-	for program in TARGET_PROGRAMS:
+	for program in args.programs:
 		exe_path = build_dir / program
 		rows = benchmark_program(
 			program=program,
@@ -281,7 +248,6 @@ def main() -> int:
 			runs=args.runs,
 			mpirun_cmd=args.mpirun,
 			mpi_np=args.mpi_np,
-			rs_seq_timeout_sec=args.rs_seq_timeout_sec,
 		)
 		all_rows.extend(rows)
 
