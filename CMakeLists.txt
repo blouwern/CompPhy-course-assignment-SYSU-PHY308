@@ -76,3 +76,15 @@ if(OpenMP_C_FOUND)
 endif()
 target_compile_definitions(MM_cblas_openmp PRIVATE REPORT_DEBUG_INFO=1)
 
+add_executable(MM_RS_openmp
+  ${APP_DIR}/MM_RS_openmp.c
+  ${INFO_OP_OPENMP}
+  ${INFO_OP}
+  ${MATRIX_OP_BASE})
+target_link_libraries(MM_RS_openmp BLAS::BLAS
+  m)
+if(OpenMP_C_FOUND)
+  target_link_libraries(MM_RS_openmp OpenMP::OpenMP_C)
+endif()
+target_compile_definitions(MM_RS_openmp PRIVATE REPORT_DEBUG_INFO=1)
+

@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
-    const char* module_name = "CBLAS MPI";
+    const char* module_name = "Rough Simple MPI";
     int n_matrix_A_row, n_matrix_A_col, n_matrix_B_row, n_matrix_B_col;
     if (argc == 1) {
         n_matrix_A_row = 1000;
