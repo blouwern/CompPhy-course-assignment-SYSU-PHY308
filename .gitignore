@@ -36,3 +36,4 @@ src/lib/utility/MACE/Version.inl
 thirdparty/
 tooling/clang-tidy-fix-*.yml
 *.tex
+*.pdf
