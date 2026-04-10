@@ -183,6 +183,6 @@ $$
 4. 但是，在更大规模矩阵或分布式环境下，MPI 的优势可能会逐渐显现；而在当前测试条件下，OpenMP 的性能表现更优。
 
 ## 附录程序说明
-源码已经上传至 [GitHub](https://github.com/blouwern/CompPhy-course-assignment-SYSU-PHY308) 仓库，源码详情请参见 `src` 和 `include` 目录下的源代码文件。
+源码已经上传至 [GitHub](https://github.com/blouwern/CompPhy-course-assignment1-SYSU-PHY308) 仓库，源码详情请参见 `src` 和 `include` 目录下的源代码文件。
 
-使用方法参见此节：[程序实例使用说明](#程序实例使用说明) 或者 GitHub 仓库中的 [`README.md`](https://github.com/blouwern/CompPhy-course-assignment-SYSU-PHY308/blob/master/README.md)。
+使用方法参见此节：[程序实例使用说明](#程序实例使用说明) 或者 GitHub 仓库中的 [`README.md`](https://github.com/blouwern/CompPhy-course-assignment1-SYSU-PHY308/blob/master/README.md)。
