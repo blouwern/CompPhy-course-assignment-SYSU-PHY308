@@ -213,7 +213,7 @@ def main() -> int:
 	)
 	parser.add_argument(
 		"--out",
-		default="report/perf_results_6_programs.csv",
+		default="report/data/perf_results_6_programs.csv",
 		help="Output CSV path.",
 	)
 	parser.add_argument("--mpirun", default="mpirun", help="MPI launcher command.")

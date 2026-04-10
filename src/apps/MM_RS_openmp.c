@@ -43,17 +43,19 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(n_threads);
     omp_set_dynamic(0);
 
+    int arg_count = argc - optind;
+    char** arg_values = argv + optind;
     int n_matrix_A_row, n_matrix_A_col, n_matrix_B_row, n_matrix_B_col;
-    if (argc == 1) {
+    if (arg_count == 0) {
         n_matrix_A_row = 1000;
         n_matrix_A_col = 500;
         n_matrix_B_row = n_matrix_A_col;
         n_matrix_B_col = 2000;
-    } else if (argc == 5) {
-        n_matrix_A_row = atoi(argv[1]);
-        n_matrix_A_col = atoi(argv[2]);
-        n_matrix_B_row = atoi(argv[3]);
-        n_matrix_B_col = atoi(argv[4]);
+    } else if (arg_count == 4) {
+        n_matrix_A_row = atoi(arg_values[0]);
+        n_matrix_A_col = atoi(arg_values[1]);
+        n_matrix_B_row = atoi(arg_values[2]);
+        n_matrix_B_col = atoi(arg_values[3]);
         if (n_matrix_A_col != n_matrix_B_row) {
             fprintf(stderr,
                     "Error: n_matrix_A_col should be equal to n_matrix_B_row\n");
@@ -61,7 +63,7 @@ int main(int argc, char* argv[]) {
         }
     } else {
         fprintf(stderr,
-                "Usage: %s [n_matrix_A_row n_matrix_A_col n_matrix_B_row "
+                "Usage: %s [-t N] [n_matrix_A_row n_matrix_A_col n_matrix_B_row "
                 "n_matrix_B_col]\n",
                 argv[0]);
         return 1;
